@@ -2,18 +2,26 @@ package ch.meiller.joel.rememberwhat.model;
 
 import android.graphics.Color;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Created by Joel on 25/11/15.
  */
 public class RememberItem {
 
+
+
+
     private String title;
     private String blackText, whiteText;
     private int blackColor, whiteColor;
-    private Boolean isWhiteActive;
+    private boolean isWhiteActive;
+
+    protected boolean isValid = true;
 
     public RememberItem(){
-        this("Remember What?","White text...","Black text...");
+        this("Remember What?", "White text...", "Black text...");
     }
 
     public RememberItem(String title, String white, String black){
@@ -23,6 +31,21 @@ public class RememberItem {
         this.whiteText = white;
         this.whiteColor = Color.WHITE;
         this.isWhiteActive = true;
+    }
+
+    protected RememberItem(String byteString) {
+
+        String[] data = byteString.split("#/");
+
+        if(data.length == 4){
+            title = data[0];
+            whiteText = data[1];
+            blackText = data[2];
+            isWhiteActive = (data[3].equals("1"));
+        }else{
+            isValid = false;
+        }
+
     }
 
     public String getTitle() {
@@ -41,6 +64,14 @@ public class RememberItem {
         return isWhiteActive ? whiteColor : blackColor;
     }
 
+    public String getBlackText() {
+        return blackText;
+    }
+
+    public String getWhiteText() {
+        return whiteText;
+    }
+
     public void setBlackText(String blackText) {
         this.blackText = blackText;
     }
@@ -49,7 +80,7 @@ public class RememberItem {
         this.whiteText = whiteText;
     }
 
-    public Boolean getIsWhiteActive() {
+    public boolean getIsWhiteActive() {
         return isWhiteActive;
     }
 
@@ -63,6 +94,21 @@ public class RememberItem {
 
     public RememberItem clone(){
         return new RememberItem(this.title, this.whiteText, this.blackText);
+    }
+
+
+    public boolean equals(Object obj) {
+        if( !(obj instanceof RememberItem) ) return false;
+
+        RememberItem item = (RememberItem) obj;
+
+        return item.getTitle().equals(this.title);
+    }
+
+    protected byte[] toOutputString() {
+
+        return (title + "#/" + whiteText + "#/" + blackText + "#/" + (isWhiteActive?"1":"0") + "#//").getBytes();
+
     }
 
 }

@@ -1,18 +1,16 @@
 package ch.meiller.joel.rememberwhat.fragment;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
+import android.support.percent.PercentRelativeLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
+import ch.meiller.joel.rememberwhat.MainActivity;
 import ch.meiller.joel.rememberwhat.R;
-
-import static ch.meiller.joel.rememberwhat.R.drawable.rectangle_black;
-import static ch.meiller.joel.rememberwhat.R.drawable.rectangle_white;
+import ch.meiller.joel.rememberwhat.model.RememberItem;
 
 public class Card extends Fragment {
 
@@ -20,29 +18,40 @@ public class Card extends Fragment {
     public static final String TEXT = "CardText";
     public static final String IS_FRONT = "IsFront";
 
+    private TextView titleView, textView;
+
     public Card() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View layoutView = inflater.inflate(R.layout.fragment_switch_detail, container, false);
+        final View layoutView = inflater.inflate(R.layout.fragment_card, container, false);
+
+        boolean isFront = getArguments().getBoolean(IS_FRONT);
 
         //Set title
-        TextView tv = (TextView) layoutView.findViewById(R.id.rememberSwitchTitle);
-        tv.setText(getArguments().getString(TITLE));
+        titleView = (TextView) layoutView.findViewById(R.id.rememberSwitchTitle);
+        titleView.setText(getArguments().getString(TITLE));
+        titleView.setTextColor(getResources().getColor(isFront ? R.color.textBlack : R.color.textWhite));
 
         //Set text
-        tv = (TextView) layoutView.findViewById(R.id.rememberSwitchText);
-        tv.setText(getArguments().getString(TEXT));
+        textView = (TextView) layoutView.findViewById(R.id.rememberSwitchText);
+        textView.setText(getArguments().getString(TEXT));
+        textView.setTextColor(getResources().getColor(isFront ? R.color.textBlack : R.color.textWhite));
 
         //Set color
-        Button bv = (Button) layoutView.findViewById(R.id.rememberSwitchButton);
+        PercentRelativeLayout bv = (PercentRelativeLayout) layoutView.findViewById(R.id.rememberSwitchCard);
 
-        int rectID = rectangle_white;
-        if( !getArguments().getBoolean(IS_FRONT)) rectID = rectangle_black;
-        Drawable rect = getResources().getDrawable(rectID);
-        bv.setBackground(rect);
+        int rectID = (isFront ? R.drawable.rectangle_white : R.drawable.rectangle_black);
+        bv.setBackgroundResource(rectID);
+        bv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((MainActivity)getActivity()).flipCard();
+            }
+        });
+
 
         return layoutView;
 

@@ -1,74 +1,174 @@
 package ch.meiller.joel.rememberwhat;
 
-
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.design.widget.FloatingActionButton;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 
-import android.widget.TextView;
-
+import ch.meiller.joel.rememberwhat.fragment.Card;
 import ch.meiller.joel.rememberwhat.model.RememberItem;
+import ch.meiller.joel.rememberwhat.model.RememberItemManager;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends Activity {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    private ViewPager mViewPager;
-
-    public RememberItem getRememeberItem() {
-        return rememeberItem;
-    }
-
-    private RememberItem rememeberItem;
+    private Card whiteCard, blackCard, card;
 
     public MainActivity(){
 
-        //load remember items
-        this.rememeberItem = new RememberItem();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        // Add new remember item
+        final Context context = this;
 
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        // Load data
+        RememberItemManager.getInstance().setContext(context);
+        RememberItemManager.getInstance().loadList();
 
+        Log.d("Main", "List: " + RememberItemManager.getInstance().getList().size() );
+
+        if( RememberItemManager.getInstance().getList().size() == 0 ) {
+
+            Intent intent = new Intent(context, AddActivity.class);
+            startActivity(intent);
+
+        }else {
+
+            whiteCard = new Card();
+            whiteCard.setArguments(getCardArgs(true));
+
+            blackCard = new Card();
+            blackCard.setArguments(getCardArgs(false));
+
+            Card card = blackCard;
+
+            if (RememberItemManager.getInstance().getActiveItem().getIsWhiteActive()) {
+                card = whiteCard;
+            }
+
+            if (savedInstanceState == null) {
+                getFragmentManager()
+                        .beginTransaction()
+                        .add(R.id.container, card)
+                        .commit();
+            }
+
+            // Edit Button to update the shown RememberItem
+            FloatingActionButton edit = (FloatingActionButton) findViewById(R.id.edit);
+            edit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    Bundle args = new Bundle();
+                    args.putString(AddActivity.TITLE, RememberItemManager.getInstance().getActiveItem().getTitle());
+                    args.putString(AddActivity.WHITE_TEXT, RememberItemManager.getInstance().getActiveItem().getWhiteText());
+                    args.putString(AddActivity.BLACK_TEXT, RememberItemManager.getInstance().getActiveItem().getBlackText());
+
+                    Intent intent = new Intent(context, AddActivity.class);
+                    intent.putExtras(args);
+                    startActivity(intent);
+                    finish();
+                }
+            });
+
+            // Delete Button to delete the shown RememberItem
+            FloatingActionButton delete = (FloatingActionButton) findViewById(R.id.delete);
+            delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    RememberItemManager.getInstance().deleteItem();
+
+                    whiteCard = new Card();
+                    whiteCard.setArguments(getCardArgs(true));
+
+                    blackCard = new Card();
+                    blackCard.setArguments(getCardArgs(false));
+
+                    flipCard();
+
+                }
+            });
+
+            // Add Button to add a new Remember Item
+            FloatingActionButton add = (FloatingActionButton) findViewById(R.id.add);
+            add.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    Intent intent = new Intent(context, AddActivity.class);
+                    startActivity(intent);
+                    finish();
+
+                }
+            });
+        }
     }
 
 
+    private Bundle getCardArgs(boolean isWhite){
+        Bundle args = new Bundle();
+        args.putString(Card.TITLE, RememberItemManager.getInstance().getActiveItem().getTitle());
+        if( isWhite ){
+            args.putString(Card.TEXT, RememberItemManager.getInstance().getActiveItem().getWhiteText());
+        }else{
+            args.putString(Card.TEXT, RememberItemManager.getInstance().getActiveItem().getBlackText());
+        }
+
+        args.putBoolean(Card.IS_FRONT, isWhite);
+
+        return args;
+    }
+
+    public void flipCard() {
+        RememberItemManager.getInstance().switchActiveItem();
+
+        Card card = blackCard;
+
+        if (RememberItemManager.getInstance().getActiveItem().getIsWhiteActive()) {
+            card = whiteCard;
+        }
+
+        // Create and commit a new fragment transaction that adds the fragment for the back of
+        // the card, uses custom animations, and is part of the fragment manager's back stack.
+
+        getFragmentManager()
+                .beginTransaction()
+
+                        // Replace the default fragment animations with animator resources representing
+                        // rotations when switching to the back of the card, as well as animator
+                        // resources representing rotations when flipping back to the front (e.g. when
+                        // the system Back button is pressed).
+                .setCustomAnimations(R.animator.card_flip_in, R.animator.card_flip_out)
+
+                        // Replace any fragments currently in the container view with a fragment
+                        // representing the next page (indicated by the just-incremented currentPage
+                        // variable).
+                .replace(R.id.container, card)
+
+                        // Add this transaction to the back stack, allowing users to press Back
+                        // to get to the front of the card.
+                .addToBackStack(null)
+
+                        // Commit the transaction.
+                .commit();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        return false;
+        return true;
     }
 
     @Override
@@ -86,82 +186,4 @@ public class MainActivity extends FragmentActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-
-            if( position == 0 ){
-                return SwitchFragment.init(rememeberItem);
-            }else {
-                return PlaceholderFragment.newInstance(position + 1);
-            }
-        }
-
-        @Override
-        public int getCount() {
-            // Show 1 page.
-            return 1;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "Remember What?";
-                default:
-                    return "Unkown";
-            }
-        }
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
-
-            return rootView;
-        }
-    }
 }
