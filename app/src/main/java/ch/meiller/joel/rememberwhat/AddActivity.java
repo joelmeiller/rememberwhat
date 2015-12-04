@@ -51,9 +51,15 @@ public class AddActivity extends Activity {
 
                 RememberItem rememberItem = new RememberItem(title, whiteText, blackText);
 
-                // Inform user in case the item could not be saved
-                if( !RememberItemManager.getInstance().addItem(rememberItem)){
-                    //TODO Alert that item could not be saved
+                if( isEditMode){
+                    if (!RememberItemManager.getInstance().editItem(rememberItem)) {
+                        //TODO Alert that item could not be saved
+                    }
+                }else {
+
+                    if (!RememberItemManager.getInstance().addItem(rememberItem)) {
+                        //TODO Alert that item could not be saved
+                    }
                 }
 
                 //Log.d("Add", rememberItem.getWhiteText() + " " + rememberItem.getBlackText() );
@@ -75,5 +81,8 @@ public class AddActivity extends Activity {
                 //setContentView(R.layout.activity_main);
             }
         });
+        if( RememberItemManager.getInstance().getList().size() == 0 ) {
+            cancel.setVisibility(View.INVISIBLE);
+        }
     }
 }

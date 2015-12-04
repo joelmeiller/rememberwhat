@@ -9,15 +9,15 @@
         android:layout_height="wrap_content" />
 
     <corners
-        android:bottomLeftRadius="8dp"
-        android:bottomRightRadius="8dp"
-        android:topLeftRadius="8dp"
-        android:topRightRadius="8dp"
+        android:bottomLeftRadius="@dimen/corner"
+        android:bottomRightRadius="@dimen/corner"
+        android:topLeftRadius="@dimen/corner"
+        android:topRightRadius="@dimen/corner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
     <stroke
-        android:width="3dp"
+        android:width="@dimen/stroke"
         android:color="@android:color/darker_gray"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

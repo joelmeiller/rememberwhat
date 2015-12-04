@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.percent.PercentFrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ch.meiller.joel.rememberwhat.helper.SwipeRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingTop="@dimen/activity_vertical_margin">
+    android:layout_height="match_parent">
 
-    <android.support.percent.PercentRelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:background="@drawable/rectangle_white"
-        android:id="@+id/rememberSwitchCard"
-        app:layout_heightPercent="70%"
-        app:layout_widthPercent="80%"
-        app:layout_marginTopPercent="5%"
-        app:layout_marginLeftPercent="10%">
+    <android.support.percent.PercentFrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/rememberSwitchTitle"
-            android:text="Remember What?"
-            android:textColor="@color/textBlack"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_margin="@dimen/text_margin"
-            />
+        <android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/rememberSwitchCard"
+            android:background="@drawable/rectangle_white"
+            app:layout_heightPercent="90%"
+            app:layout_marginLeftPercent="5%"
+            app:layout_marginTopPercent="3%"
+            app:layout_widthPercent="90%">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Michi"
-            android:textColor="@color/textBlack"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:id="@+id/rememberSwitchText"
-            app:layout_marginTopPercent="50%"
-            android:textAlignment="center" />
+            <TextView
+                android:id="@+id/rememberSwitchTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/text_margin"
+                android:text="Remember What?"
+                android:textAppearance="@android:style/TextAppearance.Large"
+                android:textColor="@color/textBlack" />
 
-    </android.support.percent.PercentRelativeLayout>
+            <TextView
+                android:id="@+id/rememberSwitchText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Michi"
+                android:textAlignment="center"
+                android:textAppearance="@android:style/TextAppearance.Large"
+                android:textColor="@color/textBlack"
+                app:layout_marginTopPercent="50%" />
 
-</android.support.percent.PercentFrameLayout
-    >
+        </android.support.percent.PercentRelativeLayout>
+
+    </android.support.percent.PercentFrameLayout>
+
+</ch.meiller.joel.rememberwhat.helper.SwipeRelativeLayout>

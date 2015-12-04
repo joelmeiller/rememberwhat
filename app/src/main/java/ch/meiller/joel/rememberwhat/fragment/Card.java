@@ -10,14 +10,17 @@ import android.widget.TextView;
 
 import ch.meiller.joel.rememberwhat.MainActivity;
 import ch.meiller.joel.rememberwhat.R;
-import ch.meiller.joel.rememberwhat.model.RememberItem;
+import ch.meiller.joel.rememberwhat.helper.SimpleGestureFilter;
 
 public class Card extends Fragment {
+
+    public static final String DEBUG = "Card";
 
     public static final String TITLE = "CardTitle";
     public static final String TEXT = "CardText";
     public static final String IS_FRONT = "IsFront";
 
+    private SimpleGestureFilter detector;
     private TextView titleView, textView;
 
     public Card() {
@@ -45,12 +48,12 @@ public class Card extends Fragment {
 
         int rectID = (isFront ? R.drawable.rectangle_white : R.drawable.rectangle_black);
         bv.setBackgroundResource(rectID);
-        bv.setOnClickListener(new View.OnClickListener() {
+        /*bv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ((MainActivity)getActivity()).flipCard();
             }
-        });
+        });*/
 
 
         return layoutView;

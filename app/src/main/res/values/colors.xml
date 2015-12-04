@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#AAA</color>
     <color name="colorAccent">#009933</color>
 
+    <color name="navStart">#000</color>
+
     <color name="textBlack">#000</color>
     <color name="textWhite">#FFF</color>
 </resources>

@@ -6,20 +6,26 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 
 import ch.meiller.joel.rememberwhat.fragment.Card;
-import ch.meiller.joel.rememberwhat.model.RememberItem;
 import ch.meiller.joel.rememberwhat.model.RememberItemManager;
 
 public class MainActivity extends Activity {
 
+    private static final String DEBUG = "MainActivity";
 
-    private Card whiteCard, blackCard, card;
+    private static final int SWIPE_LEFT = 0;
+    private static final int SWIPE_RIGHT = 1;
 
-    public MainActivity(){
+    private GestureDetector mGestureDetector;
+    private Card whiteCard, blackCard;
+
+    public MainActivity() {
 
     }
 
@@ -33,27 +39,26 @@ public class MainActivity extends Activity {
 
         // Load data
         RememberItemManager.getInstance().setContext(context);
-        RememberItemManager.getInstance().loadList();
 
-        Log.d("Main", "List: " + RememberItemManager.getInstance().getList().size() );
+        Log.d("Main", "List: " + RememberItemManager.getInstance().getList().size());
 
-        if( RememberItemManager.getInstance().getList().size() == 0 ) {
+        if (RememberItemManager.getInstance().getList().size() == 0) {
 
             Intent intent = new Intent(context, AddActivity.class);
             startActivity(intent);
 
-        }else {
-
+        } else {
             whiteCard = new Card();
             whiteCard.setArguments(getCardArgs(true));
 
             blackCard = new Card();
             blackCard.setArguments(getCardArgs(false));
 
-            Card card = blackCard;
-
+            Card card;
             if (RememberItemManager.getInstance().getActiveItem().getIsWhiteActive()) {
                 card = whiteCard;
+            } else {
+                card = blackCard;
             }
 
             if (savedInstanceState == null) {
@@ -68,6 +73,8 @@ public class MainActivity extends Activity {
             edit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
+                    Log.d(DEBUG, "Edit Button Clicked");
 
                     Bundle args = new Bundle();
                     args.putString(AddActivity.TITLE, RememberItemManager.getInstance().getActiveItem().getTitle());
@@ -87,15 +94,23 @@ public class MainActivity extends Activity {
                 @Override
                 public void onClick(View view) {
 
+                    Log.d(DEBUG, "Delete Button Clicked");
+
                     RememberItemManager.getInstance().deleteItem();
 
-                    whiteCard = new Card();
-                    whiteCard.setArguments(getCardArgs(true));
+                    if (RememberItemManager.getInstance().getList().size() > 0) {
+                        whiteCard = new Card();
+                        whiteCard.setArguments(getCardArgs(true));
 
-                    blackCard = new Card();
-                    blackCard.setArguments(getCardArgs(false));
+                        blackCard = new Card();
+                        blackCard.setArguments(getCardArgs(false));
 
-                    flipCard();
+                        onSwipeDelete();
+                    } else {
+                        Intent intent = new Intent(context, AddActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
 
                 }
             });
@@ -106,6 +121,8 @@ public class MainActivity extends Activity {
                 @Override
                 public void onClick(View view) {
 
+                    Log.d(DEBUG, "Add Button Clicked");
+
                     Intent intent = new Intent(context, AddActivity.class);
                     startActivity(intent);
                     finish();
@@ -113,15 +130,53 @@ public class MainActivity extends Activity {
                 }
             });
         }
+
+
+        // Add Gesture Dector
+        CustomGestureDetector customGestureDetector = new CustomGestureDetector();
+        mGestureDetector = new GestureDetector(this, customGestureDetector);
     }
 
+    public class CustomGestureDetector extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 
-    private Bundle getCardArgs(boolean isWhite){
+            // Swipe left (next)
+            if (e1.getX() > e2.getX()) {
+                onSwipe(SWIPE_LEFT);
+            }
+
+            // Swipe right (previous)
+            if (e1.getX() < e2.getX()) {
+                onSwipe(SWIPE_RIGHT);
+            }
+
+            return super.onFling(e1, e2, velocityX, velocityY);
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+
+            flipCard();
+
+            return super.onSingleTapConfirmed(e);
+        }
+
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        mGestureDetector.onTouchEvent(event);
+
+        return super.onTouchEvent(event);
+    }
+
+    private Bundle getCardArgs(boolean isWhite) {
         Bundle args = new Bundle();
         args.putString(Card.TITLE, RememberItemManager.getInstance().getActiveItem().getTitle());
-        if( isWhite ){
+        if (isWhite) {
             args.putString(Card.TEXT, RememberItemManager.getInstance().getActiveItem().getWhiteText());
-        }else{
+        } else {
             args.putString(Card.TEXT, RememberItemManager.getInstance().getActiveItem().getBlackText());
         }
 
@@ -131,12 +186,21 @@ public class MainActivity extends Activity {
     }
 
     public void flipCard() {
+
+        Log.d(DEBUG, "Flip Card");
+
         RememberItemManager.getInstance().switchActiveItem();
 
-        Card card = blackCard;
+        showCard();
+    }
 
+    private void showCard() {
+
+        Card card;
         if (RememberItemManager.getInstance().getActiveItem().getIsWhiteActive()) {
             card = whiteCard;
+        } else {
+            card = blackCard;
         }
 
         // Create and commit a new fragment transaction that adds the fragment for the back of
@@ -184,6 +248,137 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onSwipe(int direction) {
+
+        Log.d(DEBUG, "Swipe Card direction " + direction);
+        Card card;
+        switch (direction) {
+
+            case SWIPE_RIGHT:
+
+                if (RememberItemManager.getInstance().next()) {
+
+                    whiteCard = new Card();
+                    whiteCard.setArguments(getCardArgs(true));
+
+                    blackCard = new Card();
+                    blackCard.setArguments(getCardArgs(false));
+
+                    if (RememberItemManager.getInstance().getActiveItem().getIsWhiteActive()) {
+                        card = whiteCard;
+                    } else {
+                        card = blackCard;
+                    }
+
+                    getFragmentManager()
+                            .beginTransaction()
+
+                                    // Replace the default fragment animations with animator resources representing
+                                    // rotations when switching to the back of the card, as well as animator
+                                    // resources representing rotations when flipping back to the front (e.g. when
+                                    // the system Back button is pressed).
+                            .setCustomAnimations(R.animator.card_slide_in_left, R.animator.card_slide_out_right)
+
+                                    // Replace any fragments currently in the container view with a fragment
+                                    // representing the next page (indicated by the just-incremented currentPage
+                                    // variable).
+                            .replace(R.id.container, card)
+
+                                    // Add this transaction to the back stack, allowing users to press Back
+                                    // to get to the front of the card.
+                            .addToBackStack(null)
+
+                                    // Commit the transaction.
+                            .commit();
+                }
+                break;
+            case SWIPE_LEFT:
+
+                if (RememberItemManager.getInstance().previous()) {
+
+
+                    whiteCard = new Card();
+                    whiteCard.setArguments(getCardArgs(true));
+
+                    blackCard = new Card();
+                    blackCard.setArguments(getCardArgs(false));
+
+                    if (RememberItemManager.getInstance().getActiveItem().getIsWhiteActive()) {
+                        card = whiteCard;
+                    } else {
+                        card = blackCard;
+                    }
+
+                    getFragmentManager()
+                            .beginTransaction()
+
+                                    // Replace the default fragment animations with animator resources representing
+                                    // rotations when switching to the back of the card, as well as animator
+                                    // resources representing rotations when flipping back to the front (e.g. when
+                                    // the system Back button is pressed).
+                            .setCustomAnimations(R.animator.card_slide_in_right, R.animator.card_slide_out_left)
+
+                                    // Replace any fragments currently in the container view with a fragment
+                                    // representing the next page (indicated by the just-incremented currentPage
+                                    // variable).
+                            .replace(R.id.container, card)
+
+                                    // Add this transaction to the back stack, allowing users to press Back
+                                    // to get to the front of the card.
+                            .addToBackStack(null)
+
+                                    // Commit the transaction.
+                            .commit();
+                }
+                break;
+            default:
+                //Do nothing
+                break;
+
+        }
+    }
+
+    public void onSwipeDelete() {
+
+        Log.d(DEBUG, "Swipe Deleted Card direction " + SWIPE_RIGHT);
+        Card card;
+
+        whiteCard = new Card();
+        whiteCard.setArguments(getCardArgs(true));
+
+        blackCard = new Card();
+        blackCard.setArguments(getCardArgs(false));
+
+        if (RememberItemManager.getInstance().getActiveItem().getIsWhiteActive()) {
+            card = whiteCard;
+        } else {
+            card = blackCard;
+        }
+
+        getFragmentManager()
+                .beginTransaction()
+
+                        // Replace the default fragment animations with animator resources representing
+                        // rotations when switching to the back of the card, as well as animator
+                        // resources representing rotations when flipping back to the front (e.g. when
+                        // the system Back button is pressed).
+                .setCustomAnimations(R.animator.card_slide_in_left, R.animator.card_slide_out_right)
+
+                        // Replace any fragments currently in the container view with a fragment
+                        // representing the next page (indicated by the just-incremented currentPage
+                        // variable).
+                .replace(R.id.container, card)
+
+                        // Add this transaction to the back stack, allowing users to press Back
+                        // to get to the front of the card.
+                .addToBackStack(null)
+
+                        // Commit the transaction.
+                .commit();
+
+
     }
 
 }
