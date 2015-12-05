@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.percent.PercentFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.percent.PercentRelativeLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_edit"
+        android:background="@drawable/rectangle_white"
+        app:layout_heightPercent="90%"
+        app:layout_marginLeftPercent="5%"
+        app:layout_marginTopPercent="3%"
+        app:layout_widthPercent="90%">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/watermark_icon"
+                android:id="@+id/watermark"
+                android:src="@drawable/watermark_large_white"
+                android:adjustViewBounds="true"/>
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/titleText"
+            android:textColor="@color/textBlack"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:text="What do you want to remember?" />
+
+        <EditText
+            android:id="@+id/whiteText"
+            android:textColor="@color/textBlack"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/titleText"
+            android:layout_margin="@dimen/text_margin"
+            android:text="White Side..." />
+
+        <EditText
+            android:id="@+id/blackText"
+            android:textColor="@color/textBlack"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/whiteText"
+            android:layout_margin="@dimen/text_margin"
+            android:text="Black Side..." />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_margin="30dp"
+            android:src="@drawable/ic_check_black_18dp" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/save"
+            android:layout_marginRight="30dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+
+    </android.support.percent.PercentRelativeLayout>
+
+</android.support.percent.PercentFrameLayout>
+
