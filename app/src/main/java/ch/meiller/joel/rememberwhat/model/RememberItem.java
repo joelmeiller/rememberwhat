@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Created by Joel on 25/11/15.
+ *
+ * Contains the data for each remember task
  */
 public class RememberItem {
 

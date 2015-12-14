@@ -7,13 +7,16 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingResourceException;
 
 /**
  * Created by Joel on 01/12/15.
+ *
+ * Factory to handle the remember task items of the user including the storage on the mobile phone
+ * as file
+ * Use this factory to add, remove and update the tasks
  */
 public class RememberItemManager {
 
@@ -30,7 +33,10 @@ public class RememberItemManager {
     private static final String FILENAME = "data/rememberWhat";
 
 
-
+    /**
+     * returns the remember manager instance
+     * @return RememberItemManager instance
+     */
     public static RememberItemManager getInstance(){
 
         if( manager == null ){
@@ -48,6 +54,11 @@ public class RememberItemManager {
 
     }
 
+    /**
+     * set view context which is required to open the file stream
+     * @param context
+     * @throws MissingResourceException
+     */
     public void setContext(Context context){
 
         this.context = context;
@@ -57,7 +68,11 @@ public class RememberItemManager {
         }
     }
 
-    public boolean loadList() {
+
+    private boolean loadList() {
+
+
+        if (context == null) throw new MissingResourceException("view context is missing", Context.class.getName(), "android.content.Context");
 
         try
         {
@@ -122,10 +137,19 @@ public class RememberItemManager {
         return true;
     }
 
+    /**
+     * returns list of all active remember tasks
+     * @return List<RememberItem>
+     */
     public List<RememberItem> getList() {
         return rememberItemList;
     }
 
+    /**
+     * sets the active remember item to the next entry in the list. If the end of the list is
+     * reached the first item is set to active
+     * @return true if the list is not empty, otherwise false.
+     */
     public boolean next() {
         if( rememberItemList.size() > 1 )  {
 
@@ -140,6 +164,11 @@ public class RememberItemManager {
         }
         return rememberItemList.size() > 1;
     }
+    /**
+     * sets the active remember item to the previous entry in the list. If the beginning of the list
+     * is reached the last item is set to active
+     * @return true if the list is not empty, otherwise false.
+     */
     public boolean previous() {
         if( rememberItemList.size() > 1 )  {
 
@@ -154,9 +183,12 @@ public class RememberItemManager {
         }
         return rememberItemList.size() > 1;
     }
-    /*
-        adds the remember item to the list
 
+    /**
+     * adds an item to the list. If the item's title is equal to an existing entry the existing
+     * entry is overwritten by the new entry
+     * @param item
+     * @return true if the item could be added to the list, otherwise false
      */
     public boolean addItem(RememberItem item){
         if( item == null ) return false;
@@ -167,9 +199,11 @@ public class RememberItemManager {
         return writeItems();
     }
 
-    /*
-        update the remember item in the list
-    */
+    /**
+     * updates the active item with the values of the new item.
+     * @param item
+     * @return true if the active item could be updated, otherwise false
+     */
     public boolean editItem(RememberItem item){
         if( item == null ) return false;
 
@@ -181,9 +215,9 @@ public class RememberItemManager {
         return writeItems();
     }
 
-    /*
-        deletes the active remember item from the list
-
+    /**
+     * deletes the active item
+     * @return true if the item could have been deleted, otherwise false
      */
     public boolean deleteItem(){
         if( activeItem == null || !rememberItemList.contains(activeItem) ) return false;
@@ -197,6 +231,10 @@ public class RememberItemManager {
         return writeItems();
     }
 
+    /**
+     * returns the active item
+     * @return active remember item
+     */
     public RememberItem getActiveItem(){
 
         if( rememberItemList.size() == 0 ) return null;
@@ -208,6 +246,9 @@ public class RememberItemManager {
         return activeItem;
     }
 
+    /**
+     * switches the side of the active item
+     */
     public void switchActiveItem(){
 
         activeItem.switchSide();

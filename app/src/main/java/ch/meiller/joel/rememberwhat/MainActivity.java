@@ -2,19 +2,28 @@ package ch.meiller.joel.rememberwhat;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.transition.Fade;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 
 import ch.meiller.joel.rememberwhat.fragment.Card;
 import ch.meiller.joel.rememberwhat.fragment.CardEdit;
 import ch.meiller.joel.rememberwhat.model.RememberItemManager;
+
+/**
+ * Created by Joel on 04/12/15.
+ *
+ * UI class to control main activity of the Remember What? app.
+ */
 
 public class MainActivity extends Activity {
 
@@ -23,8 +32,10 @@ public class MainActivity extends Activity {
     private static final int SWIPE_LEFT = 0;
     private static final int SWIPE_RIGHT = 1;
 
+    private CustomGestureDetector customGestureDetector;
     private GestureDetector mGestureDetector;
     private Card whiteCard, blackCard;
+    private ViewGroup navView;
 
     public MainActivity() {
 
@@ -41,23 +52,30 @@ public class MainActivity extends Activity {
         // Load data
         RememberItemManager.getInstance().setContext(context);
 
+        // Add Gesture Dector
+        customGestureDetector = new CustomGestureDetector();
+        mGestureDetector = new GestureDetector(this, customGestureDetector);
+
+        // Get navigation view
+        navView = (ViewGroup) findViewById(R.id.nav);
+
+
         Log.d("Main", "List: " + RememberItemManager.getInstance().getList().size());
 
         if (RememberItemManager.getInstance().getList().size() == 0) {
 
             onFlipEdit(false);
+            showNavigation(false);
 
         } else {
 
-            if (savedInstanceState == null) {
                 getFragmentManager()
                         .beginTransaction()
-                        .add(R.id.container, getCard())
+                        .replace(R.id.container, getCard())
                         .commit();
-            }
-
-
         }
+
+
 
         // Edit Button to update the shown RememberItem
         FloatingActionButton edit = (FloatingActionButton) findViewById(R.id.edit);
@@ -99,12 +117,10 @@ public class MainActivity extends Activity {
             }
         });
 
-        // Add Gesture Dector
-        CustomGestureDetector customGestureDetector = new CustomGestureDetector();
-        mGestureDetector = new GestureDetector(this, customGestureDetector);
+
     }
 
-    public void onFlipCard() {
+    private void onFlipCard() {
 
         Log.d(DEBUG, "Flip Card");
 
@@ -113,7 +129,7 @@ public class MainActivity extends Activity {
         onShowCard();
     }
 
-    public void onFlipEdit(boolean isEditMode) {
+    private void onFlipEdit(boolean isEditMode) {
 
         Log.d(DEBUG, "Swipe Edit Card direction " + SWIPE_RIGHT);
 
@@ -134,12 +150,11 @@ public class MainActivity extends Activity {
                     .commit();
         }
 
-        //findViewById(R.id.nav).setAlpha(0.0f);
-
+        showNavigation(false);
 
     }
 
-    public void onFlipSave() {
+    private void onFlipSave() {
 
         getFragmentManager()
                 .beginTransaction()
@@ -148,11 +163,11 @@ public class MainActivity extends Activity {
                 .addToBackStack(null)
                 .commit();
 
-        //findViewById(R.id.nav).setAlpha(1.0f);
+        showNavigation(true);
 
     }
 
-    public void onShowCard() {
+    private void onShowCard() {
 
         Card card;
         if (RememberItemManager.getInstance().getActiveItem().getIsWhiteActive()) {
@@ -168,10 +183,10 @@ public class MainActivity extends Activity {
                 .addToBackStack(null)
                 .commit();
 
-        //findViewById(R.id.nav).setAlpha(1.0f);
+        showNavigation(true);
     }
 
-    public void onSwipe(int direction) {
+    private void onSwipe(int direction) {
 
         Log.d(DEBUG, "Swipe Card direction " + direction);
 
@@ -209,9 +224,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void onSwipeDelete() {
+    private void onSwipeDelete() {
 
-        Log.d(DEBUG, "Swipe Deleted Card direction " + SWIPE_RIGHT);
+        Log.d(DEBUG, "Swipe Deleted/Cancel Card direction " + SWIPE_RIGHT);
 
         if(RememberItemManager.getInstance().getList().size() > 0) {
             getFragmentManager()
@@ -220,6 +235,8 @@ public class MainActivity extends Activity {
                     .replace(R.id.container, getCard())
                     .addToBackStack(null)
                     .commit();
+
+            showNavigation(true);
         }else{
             getFragmentManager()
                     .beginTransaction()
@@ -227,8 +244,24 @@ public class MainActivity extends Activity {
                     .replace(R.id.container, getCardEdit(false))
                     .addToBackStack(null)
                     .commit();
+
+            showNavigation(false);
         }
 
+    }
+
+    private void showNavigation(boolean show){
+
+        if( (navView.getChildAt(0).getVisibility() == View.VISIBLE) != show) {
+            TransitionManager.beginDelayedTransition(navView, new Fade());
+            for (int i = 0; i < navView.getChildCount(); i++) {
+
+                View child = navView.getChildAt(i);
+                child.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+            }
+        }
+
+        customGestureDetector.setIsEditMode(!show);
     }
 
     @Override
@@ -311,7 +344,11 @@ public class MainActivity extends Activity {
         return card;
     }
 
-    public class CustomGestureDetector extends GestureDetector.SimpleOnGestureListener {
+    class CustomGestureDetector extends GestureDetector.SimpleOnGestureListener {
+
+        private boolean isEditMode = false;
+
+
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 
@@ -331,11 +368,19 @@ public class MainActivity extends Activity {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
 
-            onFlipCard();
+            if(isEditMode) {
+                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+            }else{
+                onFlipCard();
+            }
 
             return super.onSingleTapConfirmed(e);
         }
 
+        public void setIsEditMode(boolean isEditMode) {
+            this.isEditMode = isEditMode;
+        }
     }
 
 }

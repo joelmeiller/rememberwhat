@@ -21,21 +21,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/button_margin"
-            android:src="@android:drawable/ic_menu_edit" />
+            android:src="@drawable/ic_edit" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/button_margin"
-            android:src="@android:drawable/ic_menu_delete" />
+            android:src="@drawable/ic_delete" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/add"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/button_margin"
-            android:src="@android:drawable/ic_input_add" />
+            android:src="@drawable/ic_add" />
 
     </LinearLayout>
 

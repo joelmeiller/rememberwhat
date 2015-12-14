@@ -14,6 +14,11 @@ import ch.meiller.joel.rememberwhat.R;
 import ch.meiller.joel.rememberwhat.model.RememberItem;
 import ch.meiller.joel.rememberwhat.model.RememberItemManager;
 
+/**
+ * Created by Joel on 05/12/15.
+ *
+ * UI class to create a editable card fragment for adding new and updating existing cards
+ */
 public class CardEdit extends Fragment {
 
     public static final String DEBUG = "CardEdit";
@@ -76,9 +81,10 @@ public class CardEdit extends Fragment {
             @Override
             public void onClick(View view) {
 
-                ((MainActivity) getActivity()).onShowCard();
+                ((MainActivity) getActivity()).onSwipeDelete();
             }
         });
+
         if( RememberItemManager.getInstance().getList().size() == 0 ) {
             cancel.setVisibility(View.INVISIBLE);
         }

@@ -12,6 +12,11 @@ import android.widget.TextView;
 import ch.meiller.joel.rememberwhat.MainActivity;
 import ch.meiller.joel.rememberwhat.R;
 
+/**
+ * Created by Joel on 04/12/15.
+ *
+ * UI class to create card fragments
+ */
 public class Card extends Fragment {
 
     public static final String DEBUG = "Card";
@@ -37,6 +42,7 @@ public class Card extends Fragment {
         titleView.setText(getArguments().getString(TITLE));
         titleView.setTextColor(getResources().getColor(isFront ? R.color.textBlack : R.color.textWhite));
 
+
         //Set text
         textView = (TextView) layoutView.findViewById(R.id.cardText);
         textView.setText(getArguments().getString(TEXT));
@@ -50,7 +56,7 @@ public class Card extends Fragment {
 
         ImageView img = (ImageView) layoutView.findViewById(R.id.watermark);
         img.setImageResource(isFront ? R.drawable.watermark_large_white : R.drawable.watermark_large_black);
-        
+
 
         return layoutView;
 
